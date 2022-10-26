@@ -40,8 +40,9 @@ int main() {
       Mat q2 = SobelObject.getQuadrant(frame, 2);
       Mat q3 = SobelObject.getQuadrant(frame, 3);
       Mat q4 = SobelObject.getQuadrant(frame, 4);
-      // frame = SobelObject.combineFrames(q1, q2, q3, q4);
-      imshow("Display image", q4);
+      frame = SobelObject.combineFrames(q1, q2, q3, q4);
+      resize(frame, frame, Size(frame.cols/2, frame.rows/2));
+      imshow("Display image", frame);
 
       if(waitKey(1)==27)
         break; //wait for ESC keystroke in window
