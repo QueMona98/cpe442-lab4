@@ -33,11 +33,15 @@ int main() {
       }
 
       //filter and display image
-      Mat image = SobelObject.to442_grayscale(frame);
+      // Mat image = SobelObject.to442_grayscale(frame);
       // image = SobelObject.to442_sobel(image);
-      image = SobelObject.getQuadrant(image, 1);
-      resize(image, image, Size(image.cols/3, image.rows/3));
-      imshow("Display image", image);
+      // Mat image = frame;
+      Mat q1 = SobelObject.getQuadrant(frame, 1);
+      Mat q2 = SobelObject.getQuadrant(frame, 2);
+      Mat q3 = SobelObject.getQuadrant(frame, 3);
+      Mat q4 = SobelObject.getQuadrant(frame, 4);
+      // frame = SobelObject.combineFrames(q1, q2, q3, q4);
+      imshow("Display image", q4);
 
       if(waitKey(1)==27)
         break; //wait for ESC keystroke in window

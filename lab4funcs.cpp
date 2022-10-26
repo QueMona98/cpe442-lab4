@@ -52,39 +52,46 @@ Mat SobelFunctions::to442_sobel(Mat C) {
     return D;
 }
 
-// Mat* SobelFunctions::divideFrame(Mat frame) {
 
-    
-// }
+
+Mat SobelFunctions::combineFrames(Mat q1, Mat q2, Mat q3, Mat q4) {
+    Mat combinedFrame(q1.size().height + q4.size().height, q1.size().width + q2.size().width, CV_8UC3, Scalar(0));
+    for(int i = 0; i <)
+
+}
+
 
 Mat SobelFunctions::getQuadrant(Mat frame, int quadrant) {
 
+    cout << quadrant << endl;
+
     switch(quadrant) {
         case 1:
-            return getSubFrame(frame, 0, frame.size().height / 2, 0, frame.size().width / 2);
+            return getSubFrame(frame, 0, (frame.size().height / 2) - 1, 0, (frame.size().width / 2) - 1);
         case 2:
-            return getSubFrame(frame, 0, frame.size().height / 2, frame.size().width / 2, frame.size().width - 1);
+            return getSubFrame(frame, 0, (frame.size().height / 2) - 1, frame.size().width / 2, frame.size().width - 1);
         case 3:
             return getSubFrame(frame, frame.size().height / 2, frame.size().height - 1, frame.size().width / 2, frame.size().width - 1);
         case 4:
-            return getSubFrame(frame, frame.size().height / 2, frame.size().height - 1, 0, frame.size().width / 2);
+            return getSubFrame(frame, frame.size().height / 2, frame.size().height - 1, 0, (frame.size().width / 2) - 1);
         default: 
             cerr << "getQuadrant(): Invalid quadrant" << endl;
             exit(1);
     }
 }
 
-Mat SobelFunctions::getSubFrame(Mat frame, int startCol, int endCol, int startRow, int endRow) {
+Mat SobelFunctions::getSubFrame(Mat frame, int startRow, int endRow, int startCol, int endCol) {
 
     if (startRow >= endRow || startCol >= endCol) {
         cerr << "getSubFrame(): Invalid subframe parameters" << endl;
         exit(1);
     }
 
-    Mat subFrame(endCol- startCol, endRow - startRow, CV_8U, Scalar(0));
-    for (int i = 0; i < endRow - startRow; i++) {
-        for (int j = 0; j < endCol - startCol; j++) {
-            subFrame.at<Vec3b>(Point(i, j)) = frame.at<Vec3b>(Point(i + startRow, j + startCol));
+    Mat subFrame(endRow - startRow + 1, endCol- startCol + 1, CV_8UC3, Scalar(0));
+    cout << "Row: " << startRow << " --> " << endRow << endl << "Col: " << startCol << " --> " << endCol << endl;
+    for (int i = 0; i < subFrame.size().width - 1; i++) {
+        for (int j = 0; j < subFrame.size().height - 1; j++) {
+            subFrame.at<Vec3b>(j, i) = frame.at<Vec3b>(j + startRow, i + startCol);
         }
     }
     return subFrame;
