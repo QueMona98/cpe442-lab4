@@ -23,6 +23,19 @@ Mat SobelFunctions::to442_grayscale(Mat frame) {
     return B;
 }
 
+void SobelFunctions::to442_grayscale(Mat frame, Mat *newFrame, double a, double b){
+    
+    // Mat B(frame->size().height,frame->size().width,CV_8U);
+    //apply greyscale to all pixels
+    for(int i = floor(a*frame.size().height); i<floor(b*frame.size().height); i++){
+        for(int j = 0; j<frame.size().width; j++){
+            Vec3b colors = frame.at<Vec3b>(Point(j,i));
+            unsigned char grey = colors.val[0]*0.0722 + colors.val[1]*0.7152 + colors.val[2]*0.2126;
+            newFrame->at<unsigned char>(Point(j,i)) = grey;
+        }
+    }
+}
+
 Mat SobelFunctions::to442_sobel(Mat C) {
     
     int Gx, Gy, sum;
@@ -48,6 +61,31 @@ Mat SobelFunctions::to442_sobel(Mat C) {
         }
     }
     return D;
+}
+
+void SobelFunctions::to442_sobel(Mat* C, double a, double b){
+    
+    int Gx, Gy, sum;
+    // Mat D(C->size().height,C->size().width,CV_8U,Scalar(0));
+    
+    //apply sobel filter to all non border pixels
+    for(int j = floor(a*C->size().height)+1; j<floor(b*C->size().height)-1; j++){
+        for(int i = 1; i<(C->size().width - 1); i++){
+            Gx = C->at<unsigned char>(Point(i+1,j-1)) + C->at<unsigned char>(Point(i+1,j+1)) - 
+                C->at<unsigned char>(Point(i-1,j-1)) - C->at<unsigned char>(Point(i-1,j+1)) +
+                2*(C->at<unsigned char>(Point(i+1,j)) - C->at<unsigned char>(Point(i-1,j)));
+            
+            Gy = C->at<unsigned char>(Point(i-1,j-1)) + C->at<unsigned char>(Point(i+1,j-1)) - 
+                C->at<unsigned char>(Point(i-1,j+1)) - C->at<unsigned char>(Point(i+1,j+1)) +
+                2*(C->at<unsigned char>(Point(i,j-1)) - C->at<unsigned char>(Point(i,j+1)));
+            sum = (abs(Gx) + abs(Gy));
+            //cap sum to 8-bit unsigned char
+            if(sum > 255){
+                sum = 255;
+            }    
+            C->at<unsigned char>(Point(i,j)) = sum;
+        }
+    }
 }
 
 Mat SobelFunctions::combineFrames(Mat q1, Mat q2, Mat q3, Mat q4) {
@@ -106,6 +144,3 @@ Mat SobelFunctions::getSubFrame(Mat frame, int startRow, int endRow, int startCo
     }
     return subFrame;
 }
-
-
-

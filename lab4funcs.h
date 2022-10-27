@@ -1,4 +1,3 @@
-//lab3funcs.h
 #ifndef LAB3FUNCS_H
 #define LAB3FUNCS_H
 
@@ -14,9 +13,11 @@ class SobelFunctions {
 
     public:
     Mat to442_grayscale(Mat A);
+    void to442_grayscale(Mat frame, Mat *newFrame, double a, double b);
     Mat to442_sobel(Mat C);
+    void to442_sobel(Mat *C, double a, double b);
     Mat getQuadrant(Mat frame, int quadrant);
     Mat combineFrames(Mat q1, Mat q2, Mat q3, Mat q4);
 
 };
-#endif // !LAB3FUNCS_H
+#endif 

@@ -23,7 +23,6 @@ int main() {
     VideoCapture cap("video.mp4");
 
     while(1) {
-
       //read frame
       cap.read(frame);
 
@@ -33,16 +32,13 @@ int main() {
       }
 
       //filter and display image
-      // Mat image = SobelObject.to442_grayscale(frame);
-      // image = SobelObject.to442_sobel(image);
-      // Mat image = frame;
-      Mat q1 = SobelObject.getQuadrant(frame, 1);
-      Mat q2 = SobelObject.getQuadrant(frame, 2);
-      Mat q3 = SobelObject.getQuadrant(frame, 3);
-      Mat q4 = SobelObject.getQuadrant(frame, 4);
-      frame = SobelObject.combineFrames(q1, q2, q3, q4);
-      resize(frame, frame, Size(frame.cols/2, frame.rows/2));
-      imshow("Display image", frame);
+      Mat newFrame = Mat(frame.size().height, frame.size().width, CV_8U);
+      SobelObject.to442_grayscale(frame, &newFrame, 0, 0.25);
+      SobelObject.to442_grayscale(frame, &newFrame, 0.5, 0.75);
+      // SobelObject.to442_grayscale(&frame, 0.25, 0.5);
+      // frame = SobelObject.to442_sobel(frame, 0, 0.25);
+      resize(newFrame, newFrame, Size(newFrame.cols/2, newFrame.rows/2));
+      imshow("Display image", newFrame);
 
       if(waitKey(1)==27)
         break; //wait for ESC keystroke in window
