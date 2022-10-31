@@ -12,7 +12,7 @@ all: $(TARGET)
 $(TARGET):$(OBJECTS)
 		$(CC) -o $@ $(CPPFLAGS) $^ $(LDFLAGS)
 
-%.o : %.c $.cpp
+%.o0 : %.c $.cpp
 		$(CC) -c $(CPPFLAGS) $<
 
 clean:
