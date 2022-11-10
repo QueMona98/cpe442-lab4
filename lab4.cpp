@@ -38,9 +38,9 @@ int main() {
     int numThreads = 5; //main and thread
    
 
-  //  pthread_attr_t attr;
-   // pthread_attr_init(&attr);
-    //pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
+    pthread_attr_t attr;
+    pthread_attr_init(&attr);
+    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
 
   
     VideoCapture cap("ocean.mp4");
@@ -58,19 +58,19 @@ int main() {
 
     threadStruct thread0 = {.inputFrame = &frame, .procFrame = &displayFrame, 
                       .rows = frame.size().width, .cols = frame.size().height, 
-                      .start = 0, .stop = (frame.size().height/4) + 1};
+                      .start = 0, .stop = (thread0.rows*thread0.cols/4) + thread0.rows};
 
     threadStruct thread1 = {.inputFrame = &frame, .procFrame = &displayFrame, 
                       .rows = frame.size().width, .cols = frame.size().height, 
-                      .start = (frame.size().height/4) - 1, .stop = (frame.size().height/2) + 1};
+                      .start = (thread1.rows * thread1.cols/4) - thread1.rows, .stop = (thread1.rows*thread1.cols/2) + thread1.rows};
 
     threadStruct thread2 = {.inputFrame = &frame, .procFrame = &displayFrame, 
                       .rows = frame.size().width, .cols = frame.size().height, 
-                      .start = (frame.size().height/2) - 1, .stop = 3*(frame.size().height/4) + 1};
+                      .start = (thread2.rows*thread2.cols/2) - thread2.rows, .stop = 3*(thread2.rows*thread2.cols/4) + thread2.rows};
 
     threadStruct thread3 = {.inputFrame = &frame, .procFrame = &displayFrame, 
                       .rows = frame.size().width, .cols = frame.size().height, 
-                      .start = (3*(frame.size().height/4)) -1 , .stop = frame.size().height};
+                      .start = (3*(thread3.cols*thread3.rows/4)) - thread3.rows, .stop = thread3.cols*thread3.rows};
                       
 
     setupFunction(numThreads);
@@ -114,39 +114,35 @@ void* grayscale_sobel(void* threadArgs){
 
     threadStruct *args = (threadStruct *)threadArgs;
     Mat frame_int(args->cols,args->rows,CV_8UC1,Scalar::all(0));
+    int size = args->rows * args->cols;
+    int gray[size];
 
-    unsigned char *inputPixels = (unsigned char*) args->inputFrame;
     while(1){
-    // Mat B(frame->size().height,frame->size().width,CV_8U);
-    //apply greyscale to all pixels
-    for(int i = args->start; i<args->stop; i++){
-        for(int j = 0; j<args->inputFrame->size().width; j++){
-            Vec3b colors = args->inputFrame->at<Vec3b>(Point(j,i));
-            unsigned char grey = colors.val[0]*0.0722 + colors.val[1]*0.7152 + colors.val[2]*0.2126;
-           // args->procFrame->at<unsigned char>(Point(j,i)) = grey;
-            frame_int.at<unsigned char>(Point(j,i)) = grey;
+
+        for(int i = args->start; i < args->stop; i++){
+            gray[i] = 0.0722*(args->inputFrame->data[3*i]) + 0.7152*(args->inputFrame->data[3*i+1]) + 0.2126*(args->inputFrame->data[3*i+2]);
         }
 
-    }
-    
-    for(int i = 1; i < args->inputFrame->size().width - 1; i++){ //change start and stop
-        for(int j = 1 + args->start; j < args->stop - 1; j++){
-            Gx = frame_int.at<unsigned char>(Point(i+1,j-1)) + frame_int.at<unsigned char>(Point(i+1,j+1)) - 
-                frame_int.at<unsigned char>(Point(i-1,j-1)) - frame_int.at<unsigned char>(Point(i-1,j+1)) +
-                2*(frame_int.at<unsigned char>(Point(i+1,j)) - frame_int.at<unsigned char>(Point(i-1,j)));
-            
-            Gy = frame_int.at<unsigned char>(Point(i-1,j-1)) + frame_int.at<unsigned char>(Point(i+1,j-1)) - 
-                frame_int.at<unsigned char>(Point(i-1,j+1)) - frame_int.at<unsigned char>(Point(i+1,j+1)) +
-                2*(frame_int.at<unsigned char>(Point(i,j-1)) - frame_int.at<unsigned char>(Point(i,j+1)));
+        for(int j = args->start + args->rows; j < args->stop - args->rows; j++){
+            Gx = gray[j - 1 - args->rows] + gray[j - 1 + args->rows] 
+                - gray[j + 1 - args->rows] - gray[j + 1 + args->rows] 
+                + 2*(gray[j - 1] - gray[j + 1]);
+
+            Gy = gray[j - 1 - args->rows] + gray[j + 1 - args->rows] 
+                - gray[j - 1 + args->rows] - gray[j + 1 + args->rows] 
+                + 2*(gray[j - args->rows] - gray[j + args->rows]);
+
             sum = (abs(Gx) + abs(Gy));
+            
             //cap sum to 8-bit unsigned char
             if(sum > 255){
                 sum = 255;
-            }    
-            args->procFrame->at<unsigned char>(Point(i,j)) = (unsigned char) sum;
+            }   
+
+            args->procFrame->data[j] = (unsigned char) sum;
         }
-    }
-    pthread_barrier_wait(&barrier);
+        
+        pthread_barrier_wait(&barrier);
     }
    
     return 0;
